@@ -1,18 +1,20 @@
 @echo off
 chcp 65001 >nul
 cd /d "%~dp0"
-title Valheim Optimization [Color]
-mode con:cols=75 lines=30
+title Valheim Optimization [Net]
+mode con:cols=75 lines=35
 cls
 for /F "tokens=1,2 delims=#" %%a in ('"prompt #$H#$E# & echo on & for %%b in (1) do rem"') do set "ESC=%%b"
 set "Red=%ESC%[91m"
 set "Green=%ESC%[92m"
+set "Cyan=%ESC%[96m"
 set "Reset=%ESC%[0m"
+set "INI_URL=https://raw.githubusercontent.com/lazxvll/Valheim-Optimization/main/valheim.ini"
 
 echo.
 echo  ---------------------------------------------------------
 echo   Title:       Valheim Optimization
-echo   Description: Оптимизация Vahlheim засчет отключение файлов
+echo   Description: Очистка + Загрузка конфига
 echo   Version:     0.1
 echo   Date:        11.12.2025
 echo   Developer:   Laz
@@ -23,8 +25,6 @@ if not exist "valheim.exe" (
     echo  %Red%[ОШИБКА] Не найден valheim.exe!%Reset%
     echo.
     echo  Скрипт должен лежать в папке с игрой.
-    echo  Текущая папка: "%CD%"
-    echo.
     pause
     exit
 )
@@ -35,7 +35,7 @@ timeout /t 1 >nul
 if exist ".backup\BackupMarker.txt" goto :RESTORE_MODE
 
 :CLEAN_MODE
-echo.[РЕЖИМ] ОПТИМИЗАЦИЯ...
+echo  [РЕЖИМ] ОПТИМИЗАЦИЯ...
 echo.
 
 if not exist ".backup\valheim_Data\Plugins\x86_64" md ".backup\valheim_Data\Plugins\x86_64"
@@ -51,7 +51,7 @@ if exist "UnityCrashHandler64.exe" (
     echo  [-] UnityCrashHandler64 ..... %Red%[СПРЯТАН]%Reset%
 )
 
-:: DirectX 12, лучше использвовать DirectX 11 или Vulkan.
+:: :: DirectX 12, лучше использвовать DirectX 11 или Vulkan.
 if exist "D3D12" (
     move "D3D12" "%ROOT%\" >nul
     echo  [-] D3D12 ................... %Red%[СПРЯТАН]%Reset%
@@ -80,12 +80,24 @@ if exist "%PLUGINS_ORIG%\XGamingRuntimeThunks.dll" (
 )
 
 echo.
-echo.[ГОТОВО] Запустите еще раз для восстановления.
+echo  [NET] Загрузка valheim.ini с GitHub...
+curl -L -s -o "valheim.ini" "%INI_URL%"
+
+if exist "valheim.ini" (
+    echo  [+] valheim.ini ............. %Cyan%[СКАЧАН]%Reset%
+) else (
+    echo  [!] Ошибка загрузки ......... %Red%[FAIL]%Reset%
+)
+
+echo.
+echo  ---------------------------------------------------------
+echo  [ГОТОВО] Оптимизация завершена.
+echo  ---------------------------------------------------------
 pause
 exit
 
 :RESTORE_MODE
-echo.[РЕЖИМ] ВОССТАНОВЛЕНИЕ...
+echo  [РЕЖИМ] ВОССТАНОВЛЕНИЕ...
 echo.
 
 set "ROOT=.backup"
@@ -100,11 +112,18 @@ if exist "%PLUGINS_BACKUP%\*.dll" (
     echo  [+] Библиотеки Xbox ......... %Green%[ВОССТАНОВЛЕН]%Reset%
 )
 
+if exist "valheim.ini" (
+    del /q "valheim.ini"
+    echo  [-] valheim.ini ............. %Red%[УДАЛЕН]%Reset%
+)
+
 echo  [+] Остальные файлы ......... %Green%[ВОССТАНОВЛЕН]%Reset%
 
 rd /s /q ".backup" >nul 2>&1
 
 echo.
-echo.[ГОТОВО] Все файлы на месте.
+echo  ---------------------------------------------------------
+echo  [ГОТОВО] Игра возвращена в исходное состояние.
+echo  ---------------------------------------------------------
 pause
 exit
