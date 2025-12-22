@@ -1,4 +1,4 @@
-Нужно закинуть туда где находится **Valheim.exe**
+Нужно закинуть **Valheim (Optimization).bat** туда где находится **Valheim.exe**
 
 - Отключение DirectX 12
 - Отключение XBOX
